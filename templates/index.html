@@ -6,7 +6,7 @@
     <title>DebugDiary 📔</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        
+
         body {
             font-family: 'Segoe UI', sans-serif;
             background: #0d1117;
@@ -25,8 +25,9 @@
 
         header h1 {
             font-size: 22px;
-            font-weight: 600;
+            font-weight: 700;
             color: #f0883e;
+            letter-spacing: -0.3px;
         }
 
         header p {
@@ -43,19 +44,23 @@
             border-radius: 20px;
             font-weight: 500;
             margin-left: auto;
+            white-space: nowrap;
         }
 
         .container {
-            max-width: 1100px;
+            max-width: 1200px;
             margin: 0 auto;
             padding: 2rem;
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 1.5rem;
+            align-items: start;
         }
 
         @media (max-width: 768px) {
-            .container { grid-template-columns: 1fr; }
+            .container { grid-template-columns: 1fr; padding: 1rem; }
+            header { padding: 1rem; flex-wrap: wrap; gap: 8px; }
+            .badge { margin-left: 0; }
         }
 
         .panel {
@@ -73,7 +78,20 @@
             color: #c9d1d9;
             display: flex;
             align-items: center;
+            justify-content: space-between;
             gap: 8px;
+        }
+
+        .panel-header-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .line-count {
+            font-size: 11px;
+            color: #484f58;
+            font-weight: 400;
         }
 
         .panel-body { padding: 1.25rem; }
@@ -90,22 +108,22 @@
             resize: vertical;
             outline: none;
             transition: border-color 0.2s;
+            line-height: 1.6;
         }
 
         textarea:focus { border-color: #1f6feb; }
-
-        #code-input { height: 220px; }
+        #code-input { height: 240px; }
         #error-input { height: 80px; }
 
         label {
             display: block;
-            font-size: 12px;
+            font-size: 11px;
             color: #8b949e;
             margin-bottom: 6px;
             margin-top: 14px;
-            font-weight: 500;
+            font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 0.04em;
+            letter-spacing: 0.06em;
         }
 
         label:first-child { margin-top: 0; }
@@ -113,7 +131,7 @@
         .btn {
             width: 100%;
             margin-top: 1rem;
-            padding: 12px;
+            padding: 13px;
             background: #f0883e;
             color: #0d1117;
             border: none;
@@ -122,23 +140,35 @@
             font-weight: 700;
             cursor: pointer;
             transition: background 0.2s, transform 0.1s;
+            letter-spacing: -0.2px;
         }
 
         .btn:hover { background: #e07830; }
         .btn:active { transform: scale(0.98); }
-        .btn:disabled { background: #30363d; color: #8b949e; cursor: not-allowed; }
+        .btn:disabled { background: #30363d; color: #8b949e; cursor: not-allowed; transform: none; }
 
+        .hint {
+            font-size: 11px;
+            color: #484f58;
+            margin-top: 8px;
+            text-align: center;
+        }
+
+        /* Diary output */
         .diary-output {
             background: #0d1117;
             border: 1px solid #30363d;
             border-radius: 8px;
             padding: 16px;
-            min-height: 380px;
+            min-height: 200px;
+            max-height: 320px;
+            overflow-y: auto;
             font-size: 14px;
-            line-height: 1.8;
+            line-height: 1.85;
             color: #c9d1d9;
             white-space: pre-wrap;
             font-family: 'Georgia', serif;
+            word-break: break-word;
         }
 
         .diary-output.empty {
@@ -149,59 +179,162 @@
             font-family: 'Segoe UI', sans-serif;
             font-size: 13px;
             text-align: center;
+            min-height: 200px;
         }
 
-        .fix-section {
-            background: #0f2b1a;
-            border: 1px solid #238636;
-            border-radius: 8px;
-            padding: 14px;
+        /* Fix section */
+        .fix-wrapper {
             margin-top: 1rem;
-            font-family: monospace;
-            font-size: 13px;
-            color: #3fb950;
-            white-space: pre-wrap;
             display: none;
         }
 
-        .loading {
+        .fix-header {
             display: flex;
             align-items: center;
-            justify-content: center;
-            gap: 10px;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .fix-label {
+            font-size: 12px;
+            font-weight: 700;
+            color: #3fb950;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .copy-btn {
+            background: #21262d;
+            border: 1px solid #30363d;
             color: #8b949e;
-            font-size: 14px;
-            min-height: 380px;
+            font-size: 11px;
+            padding: 4px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.15s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .copy-btn:hover { background: #30363d; color: #c9d1d9; border-color: #484f58; }
+        .copy-btn.copied { background: #0f2b1a; border-color: #238636; color: #3fb950; }
+
+        .fix-section {
+            background: #0d1117;
+            border: 1px solid #238636;
+            border-radius: 8px;
+            padding: 14px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            color: #e6edf3;
+            white-space: pre-wrap;
+            word-break: break-word;
+            line-height: 1.7;
+            /* KEY FIX: scrollable, not clipped */
+            max-height: 400px;
+            overflow-y: auto;
+            overflow-x: auto;
+        }
+
+        /* Custom scrollbar */
+        .fix-section::-webkit-scrollbar,
+        .diary-output::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .fix-section::-webkit-scrollbar-track,
+        .diary-output::-webkit-scrollbar-track { background: transparent; }
+        .fix-section::-webkit-scrollbar-thumb,
+        .diary-output::-webkit-scrollbar-thumb {
+            background: #30363d;
+            border-radius: 3px;
+        }
+        .fix-section::-webkit-scrollbar-thumb:hover { background: #484f58; }
+
+        /* Loading */
+        .loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            color: #8b949e;
+            font-size: 13px;
+            min-height: 200px;
+            text-align: center;
         }
 
         .spinner {
-            width: 20px;
-            height: 20px;
+            width: 24px;
+            height: 24px;
             border: 2px solid #30363d;
             border-top-color: #f0883e;
             border-radius: 50%;
-            animation: spin 0.8s linear infinite;
+            animation: spin 0.7s linear infinite;
         }
 
         @keyframes spin { to { transform: rotate(360deg); } }
+
+        .loading-messages {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .loading-msg {
+            opacity: 0;
+            animation: fadeMsg 0.4s ease forwards;
+        }
+
+        .loading-msg:nth-child(1) { animation-delay: 0s; }
+        .loading-msg:nth-child(2) { animation-delay: 1.5s; }
+        .loading-msg:nth-child(3) { animation-delay: 3s; }
+
+        @keyframes fadeMsg {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Tags */
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 12px;
+        }
+
+        .tag {
+            background: #21262d;
+            border: 1px solid #30363d;
+            border-radius: 4px;
+            padding: 3px 9px;
+            font-size: 11px;
+            color: #8b949e;
+            font-family: 'Courier New', monospace;
+        }
 
         .powered {
             text-align: center;
             font-size: 11px;
             color: #484f58;
             margin-top: 2rem;
-            padding-bottom: 1rem;
+            padding-bottom: 1.5rem;
         }
 
-        .tag {
-            display: inline-block;
-            background: #21262d;
-            border: 1px solid #30363d;
-            border-radius: 4px;
-            padding: 2px 8px;
-            font-size: 11px;
-            color: #8b949e;
-            margin-right: 6px;
+        .error-msg {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #f85149;
+            font-size: 13px;
+            min-height: 200px;
+            text-align: center;
+            padding: 1rem;
         }
     </style>
 </head>
@@ -216,10 +349,14 @@
 </header>
 
 <div class="container">
+
     <!-- Input Panel -->
     <div class="panel">
         <div class="panel-header">
-            📝 Paste Your Buggy Code
+            <div class="panel-header-left">
+                📝 Paste Your Buggy Code
+            </div>
+            <span class="line-count" id="line-count">0 lines</span>
         </div>
         <div class="panel-body">
             <label>Your Code</label>
@@ -229,17 +366,17 @@ def calculate_average(nums):
     total = 0
     for num in nums
         total += num
-    return total / len(nums)"></textarea>
+    return total / len(nums)" oninput="updateLineCount()"></textarea>
 
-            <label>Error Message (optional but recommended)</label>
-            <textarea id="error-input" placeholder="SyntaxError: invalid syntax
-TypeError: unsupported operand..."></textarea>
+            <label>Error Message <span style="color:#484f58;font-weight:400;text-transform:none;">(optional but makes the fix better)</span></label>
+            <textarea id="error-input" placeholder="SyntaxError: invalid syntax&#10;TypeError: unsupported operand..."></textarea>
 
             <button class="btn" onclick="generateDiary()" id="generate-btn">
                 📖 Read My Code's Diary
             </button>
+            <p class="hint">Ctrl + Enter to generate</p>
 
-            <div style="margin-top: 12px; display: flex; flex-wrap: wrap;">
+            <div class="tags">
                 <span class="tag">Python</span>
                 <span class="tag">Java</span>
                 <span class="tag">JavaScript</span>
@@ -252,17 +389,30 @@ TypeError: unsupported operand..."></textarea>
     <!-- Output Panel -->
     <div class="panel">
         <div class="panel-header">
-            😢 Your Code's Emotional Journal
+            <div class="panel-header-left">
+                😢 Your Code's Emotional Journal
+            </div>
         </div>
         <div class="panel-body">
             <div id="output-area">
                 <div class="diary-output empty" id="diary-placeholder">
                     📔 Your code's diary entry will appear here...<br><br>
-                    <small>Paste some buggy code and click the button.<br>Your code has a lot to say.</small>
+                    <small style="line-height:1.8">Paste some buggy code and click the button.<br>Your code has a <em>lot</em> to say.</small>
                 </div>
+            </div>
+
+            <div class="fix-wrapper" id="fix-wrapper">
+                <div class="fix-header">
+                    <span class="fix-label">✅ The Actual Fix</span>
+                    <button class="copy-btn" id="copy-btn" onclick="copyFix()">
+                        📋 Copy Fix
+                    </button>
+                </div>
+                <div class="fix-section" id="fix-section"></div>
             </div>
         </div>
     </div>
+
 </div>
 
 <div class="powered">
@@ -270,68 +420,112 @@ TypeError: unsupported operand..."></textarea>
 </div>
 
 <script>
-async function generateDiary() {
-    const code = document.getElementById('code-input').value;
-    const error = document.getElementById('error-input').value;
-    const btn = document.getElementById('generate-btn');
-    const outputArea = document.getElementById('output-area');
-
-    if (!code.trim()) {
-        alert('Please paste some code first!');
-        return;
+    function updateLineCount() {
+        const code = document.getElementById('code-input').value;
+        const lines = code === '' ? 0 : code.split('\n').length;
+        document.getElementById('line-count').textContent = lines + (lines === 1 ? ' line' : ' lines');
     }
 
-    btn.disabled = true;
-    btn.textContent = '⏳ Your code is writing...';
+    const funnyLoadingMessages = [
+        "Your code is processing its trauma...",
+        "Consulting the debugging spirits...",
+        "Translating error messages into tears..."
+    ];
 
-    outputArea.innerHTML = `
-        <div class="loading">
-            <div class="spinner"></div>
-            Your code is processing its emotions...
-        </div>
-    `;
+    async function generateDiary() {
+        const code = document.getElementById('code-input').value;
+        const error = document.getElementById('error-input').value;
+        const btn = document.getElementById('generate-btn');
+        const outputArea = document.getElementById('output-area');
+        const fixWrapper = document.getElementById('fix-wrapper');
 
-    try {
-        const response = await fetch('/analyze', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ code, error })
-        });
-
-        const data = await response.json();
-
-        if (data.error) {
-            outputArea.innerHTML = `<div class="diary-output empty">❌ ${data.error}</div>`;
+        if (!code.trim()) {
+            alert('Please paste some code first!');
             return;
         }
 
-        const diary = data.diary;
-        const fixIndex = diary.indexOf('THE ACTUAL FIX:');
-
-        let diaryText = diary;
-        let fixText = '';
-
-        if (fixIndex !== -1) {
-            diaryText = diary.substring(0, fixIndex).trim();
-            fixText = diary.substring(fixIndex).trim();
-        }
+        btn.disabled = true;
+        btn.textContent = '⏳ Writing the diary...';
+        fixWrapper.style.display = 'none';
 
         outputArea.innerHTML = `
-            <div class="diary-output" id="diary-content">${diaryText}</div>
-            ${fixText ? `<div class="fix-section" id="fix-section" style="display:block">✅ ${fixText}</div>` : ''}
+            <div class="loading">
+                <div class="spinner"></div>
+                <div class="loading-messages">
+                    ${funnyLoadingMessages.map(m => `<div class="loading-msg">${m}</div>`).join('')}
+                </div>
+            </div>
         `;
 
-    } catch (err) {
-        outputArea.innerHTML = `<div class="diary-output empty">❌ Something went wrong. Try again.</div>`;
-    } finally {
-        btn.disabled = false;
-        btn.textContent = '📖 Read My Code\'s Diary';
-    }
-}
+        try {
+            const response = await fetch('/analyze', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ code, error })
+            });
 
-document.addEventListener('keydown', function(e) {
-    if (e.ctrlKey && e.key === 'Enter') generateDiary();
-});
+            const data = await response.json();
+
+            if (data.error) {
+                outputArea.innerHTML = `<div class="error-msg">❌ ${data.error}</div>`;
+                return;
+            }
+
+            const raw = data.diary;
+            const SEPARATOR = '---THE ACTUAL FIX---';
+            const fixIndex = raw.indexOf(SEPARATOR);
+
+            let diaryText = raw.trim();
+            let fixText = '';
+
+            if (fixIndex !== -1) {
+                diaryText = raw.substring(0, fixIndex).trim();
+                fixText = raw.substring(fixIndex + SEPARATOR.length).trim();
+            }
+
+            outputArea.innerHTML = `<div class="diary-output" id="diary-content">${escapeHtml(diaryText)}</div>`;
+
+            if (fixText) {
+                document.getElementById('fix-section').textContent = fixText;
+                fixWrapper.style.display = 'block';
+                // reset copy button
+                const copyBtn = document.getElementById('copy-btn');
+                copyBtn.textContent = '📋 Copy Fix';
+                copyBtn.classList.remove('copied');
+            }
+
+        } catch (err) {
+            outputArea.innerHTML = `<div class="error-msg">❌ Something went wrong. Check your connection and try again.</div>`;
+        } finally {
+            btn.disabled = false;
+            btn.textContent = '📖 Read My Code\'s Diary';
+        }
+    }
+
+    function copyFix() {
+        const fixText = document.getElementById('fix-section').textContent;
+        navigator.clipboard.writeText(fixText).then(() => {
+            const btn = document.getElementById('copy-btn');
+            btn.textContent = '✅ Copied!';
+            btn.classList.add('copied');
+            setTimeout(() => {
+                btn.textContent = '📋 Copy Fix';
+                btn.classList.remove('copied');
+            }, 2000);
+        });
+    }
+
+    function escapeHtml(text) {
+        return text
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    }
+
+    document.addEventListener('keydown', function(e) {
+        if (e.ctrlKey && e.key === 'Enter') generateDiary();
+    });
 </script>
 
 </body>
