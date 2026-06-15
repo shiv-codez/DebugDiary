@@ -23,6 +23,53 @@ Because sometimes your code just needs to vent.
 
 ---
 
+## 🏗️ Architecture
+
++------------------+
+|      User        |
++------------------+
+         |
+         v
++------------------+
+| HTML/CSS Frontend|
+|  + JavaScript UI |
++------------------+
+         |
+         | Fetch API Request
+         v
++------------------+
+| Python Flask API |
++------------------+
+         |
+         | Build Prompt
+         v
++---------------------------+
+| Google Gemini 2.5 Flash   |
++---------------------------+
+         |
+         | Returns:
+         | • Dramatic Diary Entry
+         | • Bug Explanation
+         | • Fixed Code
+         v
++------------------+
+| Python Flask API |
++------------------+
+         |
+         | JSON Response
+         v
++------------------+
+| JavaScript UI    |
++------------------+
+         |
+         v
++------------------+
+| User Sees:       |
+| • Debug Diary    |
+| • Bug Fix        |
++------------------+
+
+
 ## 🛠 How GitHub Copilot Was Used
 
 GitHub Copilot was used throughout development to:
