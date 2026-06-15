@@ -27,7 +27,7 @@ Because sometimes your code just needs to vent.
 
 +------------------+
 
-    |User|
+|      User        |
 
 +------------------+
 
